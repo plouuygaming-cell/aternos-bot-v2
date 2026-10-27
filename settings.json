@@ -1,91 +1,49 @@
 {
-  "name": "AFK Bot",
   "bot-account": {
     "username": "Mod",
-    "password": "",
     "type": "offline"
   },
   "server": {
     "ip": "Gpinoyserver.aternos.me",
     "port": 59345,
-    "version": "false"
+    "version": false
   },
   "position": {
-    "enabled": true,
+    "enabled": false,
     "x": 0,
-    "y": 100,
+    "y": 0,
     "z": 0
   },
   "utils": {
-    "auto-auth": {
-      "enabled": true,
-      "password": "Perzuu"
-    },
+    "auto-reconnect": true,
+    "auto-reconnect-delay": 3000,
+    "max-reconnect-delay": 15000,
     "anti-afk": {
       "enabled": true,
       "sneak": true
     },
-    "chat-messages": {
-      "enabled": true,
-      "repeat": true,
-      "repeat-delay": 500,
-      "messages": [
-        "I'm a regular player",
-        "Subscribe to Perzaan Gaming!",
-        "I like to play Minecraft!"
-      ]
-    },
-    "chat-log": true,
-    "auto-reconnect": true,
-    "auto-reconnect-delay": 2000,
-    "max-reconnect-delay": 20000,
     "periodic-rejoin": {
-      "enabled": false,
-      "min-interval": 20,
-      "max-interval": 60
+      "enabled": false
+    },
+    "chat-messages": {
+      "enabled": false
     }
   },
   "movement": {
-    "enabled": true,
-    "circle-walk": {
-      "enabled": true,
-      "radius": 4,
-      "speed": 3000
-    },
-    "look-around": {
-      "enabled": true,
-      "interval": 5000
-    },
-    "random-jump": {
-      "enabled": true,
-      "interval": 10000
-    }
+    "circle-walk": { "enabled": false },
+    "random-jump": { "enabled": false },
+    "look-around": { "enabled": true, "interval": 5000 }
   },
   "modules": {
-    "avoidMobs": true,
-    "combat": true,
-    "beds": true,
-    "chat": true,
-    "console-commands": true
-  },
-  "combat": {
-    "attack-mobs": true,
-    "auto-eat": true
-  },
-  "beds": {
-    "pick-up-day": true,
-    "place-night": true
-  },
-  "discord": {
-    "enabled": true,
-    "webhookUrl": "https://discord.com/api/webhooks/1472567640521183243/7DzSIaCSM_9-5DjzrlAuP9Tdj7Y3yAP6BHg3scKzhaRFdVk8ctWBlhOc7I8l5xC6Nqm3",
-    "events": {
-      "connect": true,
-      "disconnect": true,
-      "chat": false
-    }
+    "avoidMobs": false,
+    "combat": false,
+    "beds": false,
+    "chat": true
   },
   "chat": {
-    "respond": true
+    "respond": false
+  },
+  "discord": {
+    "enabled": false
   }
 }
