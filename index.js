@@ -3,15 +3,14 @@ const express = require('express');
 
 // KEEP ALIVE PARA DILI MO EXIT ANG RENDER
 const app = express();
-app.get('/', (req, res) => res.send('Bot is running!'));
-const PORT = process.env.PORT || 3000;
+app.get('/', (req, res) => res.send('Bot is running! Gpinoyserver Online!'));
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`[Web] Listening on ${PORT}`));
 
 const config = {
   host: 'Gpinoyserver.aternos.me',
-  port: 49768,
   username: 'Mod',
-  version: '1.20.1',
+  version: false,
   utils: { 'auto-reconnect': true }
 };
 
@@ -19,15 +18,16 @@ let bot;
 let reconnectTimeout;
 
 function createBot() {
+  console.log(`[Bot] Trying to connect to ${config.host}...`);
+  
   bot = mineflayer.createBot({
     host: config.host,
-    port: config.port,
     username: config.username,
-    version: config.version
+    version: false
   });
 
   bot.on('spawn', () => {
-    console.log('[Bot] Spawned!');
+    console.log('[Bot] Spawned! Bot joined successfully!');
     setupAntiAfk();
   });
 
@@ -56,6 +56,7 @@ function scheduleReconnect() {
 }
 
 function setupAntiAfk() {
+  // 1. Sneak every 30 sec
   setInterval(() => {
     if (bot && bot.entity) {
       bot.setControlState('sneak', true);
@@ -65,31 +66,4 @@ function setupAntiAfk() {
     }
   }, 30000);
 
-  setInterval(() => {
-    if (bot && bot.entity) {
-      const yaw = Math.random() * Math.PI * 2 - Math.PI;
-      const pitch = (Math.random() - 0.5) * 1.2;
-      bot.look(yaw, pitch, false);
-      bot.swingArm('right');
-      bot.setControlState('jump', true);
-      setTimeout(() => {
-        if (bot) bot.setControlState('jump', false);
-      }, 200);
-    }
-  }, 60000);
-
-  setInterval(() => {
-    if (bot && bot.entity) {
-      const forward = Math.random() > 0.5;
-      bot.setControlState(forward ? 'forward' : 'back', true);
-      setTimeout(() => {
-        if (bot) {
-          bot.setControlState('forward', false);
-          bot.setControlState('back', false);
-        }
-      }, 1200);
-    }
-  }, 120000);
-}
-
-createBot();
+  // 2. Look + Jump + Swing every 60 sec - AN
