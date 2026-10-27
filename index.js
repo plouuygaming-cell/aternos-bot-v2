@@ -1,67 +1,36 @@
-console.log("====== BOT FINAL - SINGLE INSTANCE ======");
+console.log("====== BOT STARTING ======");
+console.log("Time: " + new Date().toString());
 
 const mineflayer = require('mineflayer');
 const express = require('express');
 
-const app = express();
-app.get('/', (req, res) => res.send('Bot Single Mode!'));
-app.listen(process.env.PORT || 10000, () => console.log("WEB OK"));
+console.log("Modules loaded OK");
 
-let bot = null;
-let isConnecting = false;
-let reconnectTimer = null;
+const app = express();
+app.get('/', (req, res) => res.send('Bot is alive!'));
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log("WEB OK on port " + PORT);
+});
 
 function createBot() {
-  if (isConnecting) {
-    console.log("Already connecting, skipping duplicate...");
-    return;
+  console.log("CONNECTING to Gpinoyserver.aternos.me");
+  try {
+    const bot = mineflayer.createBot({
+      host: 'Gpinoyserver.aternos.me',
+      username: 'Mod',
+      auth: 'offline'
+    });
+
+    bot.on('spawn', () => console.log(">>> SUCCESS! MOD IS ONLINE!"));
+    bot.on('kicked', (r) => { console.log("KICKED: " + r); setTimeout(createBot, 10000); });
+    bot.on('end', (r) => { console.log("END: " + r); setTimeout(createBot, 10000); });
+    bot.on('error', (e) => { console.log("ERROR: " + e.message); });
+  } catch(e) {
+    console.log("CRASH: " + e.message);
+    setTimeout(createBot, 10000);
   }
-  isConnecting = true;
-  
-  if (bot) {
-    try { bot.quit(); } catch(e) {}
-    bot = null;
-  }
-
-  console.log("CONNECTING to Gpinoyserver.aternos.me:59345 as Mod");
-  
-  bot = mineflayer.createBot({
-    host: 'Gpinoyserver.aternos.me',
-    port: 59345,
-    username: 'Mod',
-    auth: 'offline'
-  });
-
-  bot.on('spawn', () => {
-    console.log(">>> SUCCESS! MOD IS ONLINE STABLE! <<<");
-    isConnecting = false;
-    bot.chat("Bot Mod AFK 24/7 - Stable!");
-  });
-
-  bot.on('kicked', (r) => {
-    console.log("KICKED: " + JSON.stringify(r));
-    isConnecting = false;
-    if (reconnectTimer) clearTimeout(reconnectTimer);
-    reconnectTimer = setTimeout(createBot, 30000);
-  });
-
-  bot.on('end', (reason) => {
-    console.log("END: " + reason);
-    isConnecting = false;
-    if (reason.includes("another location")) {
-      console.log(">>> DUPLICATE DETECTED - WAITING 60s BEFORE RETRY");
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      reconnectTimer = setTimeout(createBot, 60000);
-    } else {
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      reconnectTimer = setTimeout(createBot, 30000);
-    }
-  });
-
-  bot.on('error', (e) => {
-    console.log("ERROR: " + e.message);
-    isConnecting = false;
-  });
 }
 
 createBot();
+console.log("====== BOT FILE LOADED ======");
