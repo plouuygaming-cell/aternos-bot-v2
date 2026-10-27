@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, function() { console.log('Web Listening on ' + PORT); });
 
 const config = {
-  host: 'Gpinoyserver.aternos.me',
+  host: 'Gpinoyserver.aternos.me:59345',
   username: 'Mod',
   version: false
 };
