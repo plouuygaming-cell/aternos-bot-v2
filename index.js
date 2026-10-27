@@ -3,7 +3,6 @@ const { pathfinder, Movements, goals } = require('mineflayer-pathfinder');
 const GoalBlock = goals.GoalBlock;
 const express = require('express');
 const fs = require('fs');
-
 const config = JSON.parse(fs.readFileSync('./settings.json', 'utf8'));
 
 const app = express();
@@ -28,7 +27,7 @@ function scheduleReconnect() {
   if (isReconnecting) return;
   isReconnecting = true;
   const delay = getReconnectDelay();
-  console.log(`[Reconnect] Reconnecting in ${delay}ms...`);
+  console.log(`[Reconnect] In ${delay}ms... Attempt ${botState.reconnectAttempts + 1}`);
   botState.reconnectAttempts++;
   setTimeout(() => { isReconnecting = false; createBot(); }, delay);
 }
@@ -46,7 +45,7 @@ function createBot() {
     auth: config['bot-account'].type || 'offline',
     host: config.server.ip,
     port: config.server.port,
-    version: config.server.version
+    version: false
   });
   bot.loadPlugin(pathfinder);
 
@@ -63,7 +62,6 @@ function createBot() {
       bot.pathfinder.setGoal(new GoalBlock(config.position.x, config.position.y, config.position.z));
     }
     initializeModules(bot, mcData, defaultMove);
-    try { const setupLeaveRejoin = require('./leaveRejoin'); setupLeaveRejoin(bot, createBot); } catch(e){ console.log('[Rejoin] leaveRejoin.js not found'); }
   });
 
   bot.on('end', (reason) => {
@@ -77,7 +75,7 @@ function createBot() {
 }
 
 function initializeModules(bot, mcData, defaultMove) {
-  console.log('[Modules] Initializing...');
+  console.log('[Modules] Initializing... Safe Anti-AFK only!');
   let authDone = false;
   bot.on('messagestr', (msg) => {
     const message = msg.toLowerCase();
@@ -85,46 +83,30 @@ function initializeModules(bot, mcData, defaultMove) {
     if (message.includes('register')) { authDone = true; bot.chat('/register Perzuu Perzuu'); console.log('[Auth] Register sent'); return; }
     if (message.includes('login')) { authDone = true; bot.chat('/login Perzuu'); console.log('[Auth] Login sent'); return; }
   });
-  if (config.utils['anti-afk'].enabled) {
-    addInterval(() => {
-      if (bot && botState.connected) { bot.setControlState('jump', true); setTimeout(() => { if(bot) bot.setControlState('jump', false); }, 100); }
-    }, 3000);
-    if (config.utils['anti-afk'].sneak) bot.setControlState('sneak', true);
-  }
-  if (config.movement['circle-walk'].enabled) startCircleWalk(bot, defaultMove);
-  if (config.movement['random-jump'].enabled) startRandomJump(bot);
-  if (config.movement['look-around'].enabled) startLookAround(bot);
+
+  // ===== SAFE ANTI-AFK - NO MOVEMENT PACKET - FIX FOR Invalid move =====
+  bot.setControlState('sneak', true);
+  console.log('[AFK] Sneak enabled - Safe mode');
+
+  addInterval(() => {
+    if (!bot || !botState.connected) return;
+    try { bot.swingArm('right'); console.log('[AntiAFK] Swing arm'); } catch(e){}
+  }, 45000);
+
+  addInterval(() => {
+    if (!bot || !botState.connected) return;
+    try {
+      const yaw = bot.entity.yaw + (Math.random() - 0.5) * 0.3;
+      bot.look(yaw, 0, true);
+      console.log('[AntiAFK] Slow look');
+    } catch(e){}
+  }, 30000);
+  // ===================================================================
+
   if (config.modules.chat) chatModule(bot);
-  console.log('[Modules] All modules initialized!');
+  console.log('[Modules] All modules initialized! Safe AFK active!');
 }
 
-function periodicRejoin(bot) { console.log('[Rejoin] Using new leaveRejoin system.'); }
-function startCircleWalk(bot, defaultMove) {
-  console.log('[Movement] Circle walk started');
-  let angle = 0;
-  addInterval(() => {
-    if (!bot || !botState.connected) return;
-    angle += 0.2; bot.look(angle, 0, true);
-    bot.setControlState('forward', true);
-    setTimeout(() => { if(bot) bot.setControlState('forward', false); }, 400);
-  }, config.movement['circle-walk'].speed || 3000);
-}
-function startRandomJump(bot) {
-  addInterval(() => {
-    if (!bot || !botState.connected) return;
-    bot.setControlState('jump', true);
-    setTimeout(() => { if(bot) bot.setControlState('jump', false); }, 150);
-  }, config.movement['random-jump'].interval || 10000);
-}
-function startLookAround(bot) {
-  addInterval(() => {
-    if (!bot || !botState.connected) return;
-    bot.look(Math.random()*Math.PI*2, (Math.random()-0.5)*0.5, true);
-  }, config.movement['look-around'].interval || 5000);
-}
-function avoidMobs(bot) {}
-function combatModule(bot, mcData) {}
-function bedModule(bot, mcData) {}
 function chatModule(bot) { console.log('[Module] chat enabled'); }
 
 function startSelfPing() {
