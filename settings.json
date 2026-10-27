@@ -8,7 +8,7 @@
   "server": {
     "ip": "Gpinoyserver.aternos.me",
     "port": 59345,
-    "version": "26.52"
+    "version": "false"
   },
   "position": {
     "enabled": true,
